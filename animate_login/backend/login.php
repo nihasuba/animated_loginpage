@@ -1,5 +1,6 @@
 <?php
-include 'DbConnector.php';
+session_start();
+include 'DbConnector.php';  // Include the unified connection class
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin:*');
 header('Access-Control-Allow-Headers: Content-Type');
@@ -11,16 +12,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $userInput['email'];
     $password = $userInput['password'];
 
-    
     // Define the login class with the check_user function
     class Login {
-        private $db;
         private $conn;
 
         public function __construct()
         {
-            $this->db = new DbConnector();
-            $this->conn = $this->db->getConnection();
+            // Create a new instance of DbConnector and get the connection
+            $db = new DbConnector();
+            $this->conn = $db->getConnection();
         }
 
         public function check_user($email, $password, $table) {
@@ -32,43 +32,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->rowCount() > 0) {
                 $stmt->setFetchMode(PDO::FETCH_ASSOC);
                 $user = $stmt->fetch();
-
-                // echo json_encode(['debug' => 'Email from DB', 'email' => $user['email']]);
-                // echo json_encode(['debug' => 'Password from DB', 'password' => $user['password']]);
-                // echo json_encode(['debug' => 'Plain password from input', 'passwordInput' => $password]);
                 
                 if ($password === $user['password']) {
-                    // echo json_encode(['debug' => 'Password matches!']);
                     return $user;
                 } else {
-                    //echo json_encode(['debug' => 'Password did not match']);
                     return false;
                 }
             }
             return false;
-        }  
+        }
     }
 
     // Create a new Login object and check the user
-    $User = new Login();  // Pass the connection to the constructor
-    $user = null;
+    $User = new Login();
     $userType = null;
 
     if ($user = $User->check_user($email, $password, 'admin')) {
         $userType = 'admin';
-    } elseif ($user = $User->check_user($email, $password, 'user')) {  // Fixed elseif condition
+    } elseif ($user = $User->check_user($email, $password, 'user')) {
         $userType = 'user';
     } else {
         echo json_encode(['success' => false, 'message' => 'Invalid email or password']);
-        exit;  // Prevent further code execution
+        exit;
+    }
+    if($userType){
+        $_SESSION['user']=[
+            'email'=>$user['email'],
+            'type'=>$userType
+        ];
     }
 
-    // If the userType is determined, return success response
-    if ($userType) {
-        echo json_encode(['success' => true, 'message' => 'Login Successful', 'userType' => $userType]);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Please make sure that email and password are correct.']);
-    }
+    // Return the success response with userType
+    echo json_encode(['success' => true, 'message' => 'Login Successful', 'userType' => $userType]);
 
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);

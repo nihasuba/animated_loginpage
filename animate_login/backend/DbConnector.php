@@ -1,21 +1,26 @@
 <?php
-class DbConnector{
-    private $user = "root";
+
+class DbConnector {
     private $host = "localhost";
+    private $user = "root";
     private $pwd = "";
     private $dbname = "animate_page";
     private $pdo;
 
-    public function getConnection(){
-        try{
-            $this->pdo = new PDO("mysql:host=$this->host;dbname=$this->dbname",$this->user , $this->pwd);
+    public function __construct() {
+        // Initialize the PDO connection in the constructor
+        try {
+            $this->pdo = new PDO("mysql:host={$this->host};dbname={$this->dbname}", $this->user, $this->pwd);
             $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            return $this->pdo;
-        }catch(PDOException $e){
-            echo "Connection failed with  class :".$e->getMessage();
+        } catch (PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+            exit;
         }
-       
-        }
-}
+    }
 
+    public function getConnection() {
+        // Return the PDO connection object
+        return $this->pdo;
+    }
+}
 ?>

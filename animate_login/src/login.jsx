@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './style.css'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -13,6 +13,18 @@ const [password, setPassword] = useState('');
 const [message, setMessage] = useState('');
 const [messageType, setMessageType] = useState('');
 const [msg, setMsg] = useState(''); 
+const [userType, setUserType] = useState('');
+const [isLoading, setIsLoading] = useState(false);
+
+useEffect(() => {
+    const sessionUser = JSON.parse(sessionStorage.getItem('user'));
+    const localUser = JSON.parse(localStorage.getItem('user'));
+    const user = sessionUser || localUser;
+    if (user) {
+        setEmail(user.email);
+        setUserType(user.userType);
+    }
+}, []);
 
 const handleRegister = async (e) => {
     e.preventDefault();
@@ -67,8 +79,19 @@ const handleLogin = async (e) => {
         const userType = data.userType;
         console.log(userType);
         const user = { email, userType };
-  
         
+        sessionStorage.setItem('user', JSON.stringify(user));
+        //console.log("User saved to sessionStorage:", user);
+
+        const sessionUser = JSON.parse(sessionStorage.getItem('user'));
+        //console.log("User loaded from sessionStorage:", sessionUser);
+
+        localStorage.setItem('user', JSON.stringify(user));
+        //console.log("User saved to sessionStorage:", user);
+
+        const localUser = JSON.parse(localStorage.getItem('user'));
+        //console.log("User loaded from sessionStorage:", sessionUser);
+
         setMessage('Login Successful');
         setMessageType('success');
         
@@ -128,7 +151,7 @@ const handleLogin = async (e) => {
                         onChange={(e) =>setName(e.target.value)}
                         required/>
                         <input type="email" 
-                        placeholder="kala@gmail.com"
+                        placeholder="email"
                         value={email}
                         onChange={(e)=>setEmail(e.target.value)}
                         required/>
@@ -176,7 +199,7 @@ const handleLogin = async (e) => {
                         <div className="toggle-panel toggle-left">
                             <h1>Welcome Back</h1>
                             <p>Enter Your details to use all of site features</p>
-                            <button  class="hidden" onClick={()=> containerr.classList.remove("active")} >Sign In</button>
+                            <button  className="hidden" onClick={()=> containerr.classList.remove("active")} >Sign In</button>
                         </div>
                         <div className="toggle-panel toggle-right">
                             <h1>Hello User</h1>
